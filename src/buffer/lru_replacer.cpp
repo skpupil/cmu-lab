@@ -14,16 +14,53 @@
 
 namespace bustub {
 
-LRUReplacer::LRUReplacer(size_t num_pages) {}
+    LRUReplacer::LRUReplacer(size_t num_pages) {
+        max_size = num_pages;
+    }
 
 LRUReplacer::~LRUReplacer() = default;
 
-bool LRUReplacer::Victim(frame_id_t *frame_id) { return false; }
+bool LRUReplacer::Victim(frame_id_t *frame_id) {
+    mut.lock();
+    if(LRUlist.empty()) {
+        mut.unlock();
+        return false;
+    }
+    frame_id_t need_del = LRUlist.back();
+    LRUmap.erase(need_del);
+    LRUlist.pop_back();
+    *frame_id = need_del;
+    mut.unlock();
+    return true;
+}
 
-void LRUReplacer::Pin(frame_id_t frame_id) {}
+void LRUReplacer::Pin(frame_id_t frame_id) {
+    mut.lock();
+    if(LRUmap.count(frame_id) != 0) {
+        LRUlist.erase(LRUmap[frame_id]);
+        LRUmap.erase(frame_id);
+    }
+    mut.unlock();
+}
 
-void LRUReplacer::Unpin(frame_id_t frame_id) {}
+void LRUReplacer::Unpin(frame_id_t frame_id) {
+    mut.lock();
+    if(LRUmap.count(frame_id) != 0) {
+        mut.unlock();
+        return ;
+    }
 
-size_t LRUReplacer::Size() { return 0; }
+    while(Size() >= max_size) {
+        frame_id_t need_del  = LRUlist.back();
+        LRUlist.pop_back();
+        LRUmap.erase(need_del);
+    }
+    LRUlist.push_front(frame_id);
+    LRUmap[frame_id] = LRUlist.begin();
+    mut.unlock();
+    return ;
+}
+
+size_t LRUReplacer::Size() { return LRUlist.size(); }
 
 }  // namespace bustub

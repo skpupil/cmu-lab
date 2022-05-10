@@ -111,6 +111,8 @@ class BufferPoolManager {
     }
   }
 
+  bool find_replace(frame_id_t *frame_id);
+
   /**
    * Fetch the requested page from the buffer pool.
    * @param page_id id of page to be fetched
@@ -151,6 +153,13 @@ class BufferPoolManager {
    * Flushes all the pages in the buffer pool to disk.
    */
   void FlushAllPagesImpl();
+
+  /**
+   * page_table表示现在放入缓冲区的page_id与对应占的位置frame_id
+   * pages_就是缓冲区当前存的pool_size个page，可以用frame_id作为下标取出缓冲区的单个page
+   * page_id表示由diskmanager分配得到的page编号，目前是id自增策略，它的大小完全有可能超过pool_size
+   * frame_id表示缓冲区中的每页占的位置，它的范围只能是[0,pool_size)
+   */
 
   /** Number of pages in the buffer pool. */
   size_t pool_size_;

@@ -20,6 +20,10 @@ namespace bustub {
 
 LRUReplacer::~LRUReplacer() = default;
 
+    /*
+     * 当frame不够用的时候，需要从LRU list中victim掉一个frame
+     * 调用者传入的frame_id，就是被victim的frame，这样调用者可以得到frame_id
+     */
 bool LRUReplacer::Victim(frame_id_t *frame_id) {
     mut.lock();
     if(LRUlist.empty()) {
@@ -33,7 +37,9 @@ bool LRUReplacer::Victim(frame_id_t *frame_id) {
     mut.unlock();
     return true;
 }
-
+/*
+ * LRU只管理没有被pin的
+ */
 void LRUReplacer::Pin(frame_id_t frame_id) {
     mut.lock();
     if(LRUmap.count(frame_id) != 0) {

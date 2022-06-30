@@ -43,7 +43,7 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::Init(page_id_t page_id, page_id_t parent_id, in
   SetParentPageId(parent_id);
   SetSize(0);                      // 最开始current size为0
   SetMaxSize(max_size);            // max_size=LEAF_PAGE_SIZE-1 这里也可以减1，方便后续的拆分(Split)函数
-  SetNextPageId(INVALID_PAGE_ID);  // 疑问：是这样初始化吗？答案：是的
+  SetNextPageId(INVALID_PAGE_ID);  // 疑问：是这样初始化吗？答案：是的. 最开始next page id不存在
 }
 
 /**

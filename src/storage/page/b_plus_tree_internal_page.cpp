@@ -23,7 +23,7 @@
 
 #include <iostream>
 #include <sstream>
-
+#include "common/logger.h"
 #include "common/exception.h"
 #include "storage/page/b_plus_tree_internal_page.h"
 
@@ -148,15 +148,23 @@ int B_PLUS_TREE_INTERNAL_PAGE_TYPE::InsertNodeAfter(const ValueType &old_value, 
   // if (GetSize() == GetMaxSize()) {  // 边界
   //   throw std::runtime_error("out of memory");
   // }
-  int insert_index = ValueIndex(old_value) + 1;  // 得到 =old_value的下标 的后一个
+  int insert_index = ValueIndex(old_value);  // + 1 得到 =old_value的下标 的后一个
+  LOG_INFO("insert_index %d from Insert()", insert_index);
   assert(insert_index != -1);
   // 数组下标>=insert_index的元素整体后移1位
   // [insert_index, size - 1] --> [insert_index + 1, size]
-  for (int i = GetSize(); i > insert_index; i--) {
-    array[i] = array[i - 1];
+  for (int i = GetSize() ; i > insert_index+1; i--) {
+    LOG_INFO("loop %d from Insert()", i);
+    //array[i] = array[i - 1];
+      array[i ].first = array[i - 1].first;
+      array[i ].second = array[i - 1].second;
   }
-  array[insert_index] = std::make_pair(new_key, new_value);  // insert pair
   IncreaseSize(1);
+  LOG_INFO("size after increase %d from Insert()", GetSize());
+  //array[insert_index] = std::make_pair(new_key, new_value);  // insert pair
+  //array[insert_index + 1].first = new_key;
+  //array[insert_index + 1].second = new_value;
+  array[insert_index + 1] = MappingType{new_key, new_value};  // insert pair
   return GetSize();
 }
 
@@ -174,8 +182,8 @@ int B_PLUS_TREE_INTERNAL_PAGE_TYPE::InsertNodeAfter(const ValueType &old_value, 
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveHalfTo(BPlusTreeInternalPage *recipient,
                                                 BufferPoolManager *buffer_pool_manager) {
-  int start_index = GetMinSize();  // (0,1,2) start index is 1; (0,1,2,3) start index is 2;
-  int move_num = GetSize() - start_index;
+  int start_index = GetMinSize() + 1;  // (0,1,2) start index is 1; (0,1,2,3) start index is 2;
+  int move_num = GetSize() - start_index ;
   // 将this page的从array+start_index开始的move_num个元素复制到recipient page的array尾部
   // NOTE：同时，也使得recipient page中array每个元素的parent id指向了this page（疑问：如何理解，此处存疑）答案：直接指向this page就行
   // NOTE：同时，将recipient page的array中每个value指向的孩子结点的父指针更新为recipient page id

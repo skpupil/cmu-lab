@@ -14,6 +14,7 @@
 
 #include <list>
 #include <unordered_map>
+#include "common/logger.h"
 using namespace std;
 namespace bustub {
 
@@ -78,7 +79,8 @@ Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
         replacer_->Pin(frame_id);  // notify replacer
 
         latch_.unlock();
-        cout<<"fetch from mem "<<page->page_id_ <<" "<<page->pin_count_<<endl;
+        //cout<<"fetch from mem "<<page->page_id_ <<" "<<page->pin_count_<<endl;
+        LOG_INFO("fetch page %d from mem from FetchPageImpl() ", page->page_id_);
         return page;
     }
     // 1.2 P not exist
@@ -104,7 +106,8 @@ Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
     newPage->page_id_ = page_id;
     // atention!!
     newPage->pin_count_ = 1;
-    cout<<"fetch from disk"<<page_id<<" "<<newPage->pin_count_<<endl;
+    //cout<<"fetch from disk"<<page_id<<" "<<newPage->pin_count_<<endl;
+    LOG_INFO("fetch page %d from disk from FetchPageImpl() ", page_id);
     assert(newPage->pin_count_ == 1);
     newPage->is_dirty_ = false;
     replacer_->Pin(replace_fid);
@@ -129,7 +132,10 @@ bool BufferPoolManager::UnpinPageImpl(page_id_t page_id, bool is_dirty) {
     // 2. 找到要被unpin的page
     frame_id_t unpinned_Fid = iter->second;
     Page *unpinned_page = &pages_[unpinned_Fid];
-    cout<<"unpin "<<page_id<<" "<<unpinned_page->pin_count_<<endl;
+    //cout<<"unpin "<<page_id<<" "<<unpinned_page->pin_count_<<endl;
+    //LOG_INFO("unpin page %d from disk before count %d from UnpinPageImpl() ", unpinned_Fid, unpinned_page->pin_count_);
+    //LOG_INFO("unpin page from disk before count from UnpinPageImpl() ");
+    LOG_INFO("unpin page from mem before count %d from UnpinPageImpl() ",unpinned_page->pin_count_);
     if (is_dirty) {
         unpinned_page->is_dirty_ = true;
     }
@@ -141,7 +147,7 @@ bool BufferPoolManager::UnpinPageImpl(page_id_t page_id, bool is_dirty) {
         return false;
     }
     unpinned_page->pin_count_--;
-    cout<<"unpin "<<page_id<<" "<<unpinned_page->pin_count_<<endl;
+    //cout<<"unpin "<<page_id<<" "<<unpinned_page->pin_count_<<endl;
     if (unpinned_page->GetPinCount() == 0) {
         replacer_->Unpin(unpinned_Fid);
     }
@@ -180,7 +186,8 @@ Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
     for (int i = 0; i < static_cast<int>(pool_size_); i++) {
         if (pages_[i].pin_count_ == 0) {
             is_all = false;
-            cout<<"nott pin: "<<i<<" "<<pages_[i].pin_count_<<endl;
+            //cout<<"nott pin: "<<i<<" "<<pages_[i].pin_count_<<endl;
+            LOG_INFO("new page %d from NewPageImpl() ", i);
             break;
         }
     }
@@ -211,7 +218,8 @@ Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
 
     if (victim_page->IsDirty()) {
         disk_manager_->WritePage(victim_page->page_id_, victim_page->data_);
-        cout<<"write "<<victim_page->GetPageId() <<" "<<victim_page->GetData()<<endl;
+        //cout<<"write "<<victim_page->GetPageId() <<" "<<victim_page->GetData()<<endl;
+        LOG_INFO("writeback page %d from NewPageImpl() ", victim_page->GetPageId());
         victim_page->is_dirty_ = false;
     }
 
@@ -223,10 +231,7 @@ Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
     replacer_->Pin(victim_fid);
     *page_id = new_page_id;
 
-    cout<<"new page "<<new_page_id <<" "<<victim_page->pin_count_<<endl;
-
     latch_.unlock();
-    cout<<"newpage "<<new_page_id<<" count "<<victim_page->pin_count_<<endl;
     return victim_page;
 }
 

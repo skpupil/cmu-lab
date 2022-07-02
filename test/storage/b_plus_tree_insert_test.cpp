@@ -85,7 +85,6 @@ TEST(BPlusTreeTests, InsertTest2) {
   // create transaction
   Transaction *transaction = new Transaction(0);
 
-  /*
   // create and fetch header_page
   page_id_t page_id;
   auto header_page = bpm->NewPage(&page_id);
@@ -139,6 +138,5 @@ TEST(BPlusTreeTests, InsertTest2) {
   delete bpm;
   remove("test.db");
   remove("test.log");
-  */
 }
 }  // namespace bustub

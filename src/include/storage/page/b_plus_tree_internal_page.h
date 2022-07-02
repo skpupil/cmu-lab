@@ -62,5 +62,7 @@ class BPlusTreeInternalPage : public BPlusTreePage {
   void CopyLastFrom(const MappingType &pair, BufferPoolManager *buffer_pool_manager);
   void CopyFirstFrom(const MappingType &pair, BufferPoolManager *buffer_pool_manager);
   MappingType array[0];
+
+  std::mutex latch_;     // DEBUG
 };
 }  // namespace bustub

@@ -182,7 +182,10 @@ int B_PLUS_TREE_INTERNAL_PAGE_TYPE::InsertNodeAfter(const ValueType &old_value, 
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::MoveHalfTo(BPlusTreeInternalPage *recipient,
                                                 BufferPoolManager *buffer_pool_manager) {
-  int start_index = GetMinSize() + 1;  // (0,1,2) start index is 1; (0,1,2,3) start index is 2;
+  int start_index = GetMinSize() + 1;  
+  // nowsize: 4, maxsize:3, minseize: 1, (0,1,2) start index is 2;
+  //nowsize: 5, maxsize:4,minsize:2 (0,1,2,3) start index is 2/3, this implement is 3; 
+  //because 0 is null in internal page
   int move_num = GetSize() - start_index ;
   // 将this page的从array+start_index开始的move_num个元素复制到recipient page的array尾部
   // NOTE：同时，也使得recipient page中array每个元素的parent id指向了this page（疑问：如何理解，此处存疑）答案：直接指向this page就行

@@ -135,7 +135,7 @@ bool BufferPoolManager::UnpinPageImpl(page_id_t page_id, bool is_dirty) {
     //cout<<"unpin "<<page_id<<" "<<unpinned_page->pin_count_<<endl;
     //LOG_INFO("unpin page %d from disk before count %d from UnpinPageImpl() ", unpinned_Fid, unpinned_page->pin_count_);
     //LOG_INFO("unpin page from disk before count from UnpinPageImpl() ");
-    LOG_INFO("unpin page from mem before count %d from UnpinPageImpl() ",unpinned_page->pin_count_);
+    LOG_INFO("unpin page %d from mem before count %d from UnpinPageImpl() ",unpinned_Fid, unpinned_page->pin_count_);
     if (is_dirty) {
         unpinned_page->is_dirty_ = true;
     }

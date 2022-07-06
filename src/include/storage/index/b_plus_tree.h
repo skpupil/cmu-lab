@@ -13,7 +13,7 @@
 #include <queue>
 #include <string>
 #include <vector>
-
+#include <utility>  // for std::pair
 #include "concurrency/transaction.h"
 #include "storage/index/index_iterator.h"
 #include "storage/page/b_plus_tree_internal_page.h"
@@ -22,6 +22,8 @@
 namespace bustub {
 
 #define BPLUSTREE_TYPE BPlusTree<KeyType, ValueType, KeyComparator>
+
+enum class Operation { FIND = 0, INSERT, DELETE };  // 三种操作：查找、插入、删除
 
 /**
  * Main class providing the API for the Interactive B+ Tree.
@@ -79,13 +81,21 @@ class BPlusTree {
   // expose for test purpose
   Page *FindLeafPage(const KeyType &key, bool leftMost = false);
 
+  std::pair<Page *, bool> FindLeafPageByOperation(const KeyType &key, Operation operation = Operation::FIND,
+                                                  Transaction *transaction = nullptr, bool leftMost = false,
+                                                  bool rightMost = false);
+
+  //IndexPageType GetPageType() const { return page_type_; } // DEBUG
+
  private:
   void StartNewTree(const KeyType &key, const ValueType &value);
 
   bool InsertIntoLeaf(const KeyType &key, const ValueType &value, Transaction *transaction = nullptr);
 
+//  void InsertIntoParent(BPlusTreePage *old_node, const KeyType &key, BPlusTreePage *new_node,
+//                        Transaction *transaction = nullptr);
   void InsertIntoParent(BPlusTreePage *old_node, const KeyType &key, BPlusTreePage *new_node,
-                        Transaction *transaction = nullptr);
+                        Transaction *transaction = nullptr, bool *root_is_latched = nullptr);
 
   template <typename N>
   N *Split(N *node);
@@ -99,6 +109,15 @@ class BPlusTree {
 
   template <typename N>
   void Redistribute(N *neighbor_node, N *node, int index);
+
+  void UnlockPages(Transaction *transaction);
+
+  // unlock 和 unpin 事务中经过的所有parent page
+  void UnlockUnpinPages(Transaction *transaction);
+
+  // 判断node是否安全
+  template <typename N>
+  bool IsSafe(N *node, Operation op);
 
   bool AdjustRoot(BPlusTreePage *node);
 
@@ -116,6 +135,7 @@ class BPlusTree {
   KeyComparator comparator_;
   int leaf_max_size_;
   int internal_max_size_;
+  std::mutex root_latch_;  // 保护root page id不被改变
   std::mutex latch_;  // DEBUG
 };
 

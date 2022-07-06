@@ -25,7 +25,8 @@ class IndexIterator {
   using LeafPage = BPlusTreeLeafPage<KeyType, ValueType, KeyComparator>;
   // you may define your own constructor based on your member variables
   IndexIterator() = delete;
-  IndexIterator(BufferPoolManager *bpm, LeafPage *leaf, int index);
+  //IndexIterator(BufferPoolManager *bpm, LeafPage *leaf, int index);
+  IndexIterator(BufferPoolManager *bpm, Page *page, int index);
   ~IndexIterator();
 
   bool isEnd();
@@ -44,6 +45,7 @@ class IndexIterator {
   // add your own private member variables here
     // 注意：确保成员出现在构造函数的初始化列表中的顺序与它们在类中出现的顺序相同
   BufferPoolManager *buffer_pool_manager_;
+  Page *page_;
   LeafPage *leaf_;
   int index_;
 };

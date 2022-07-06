@@ -113,6 +113,9 @@ int B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &valu
   //   throw std::runtime_error("out of memory");
   // }
   int insert_index = KeyIndex(key, comparator);  // 查找第一个>=key的的下标
+  if (comparator(KeyAt(insert_index), key) == 0) {  // 重复的key
+    return GetSize();
+  }
   // 数组下标>=insert_index的元素整体后移1位
   // [insert_index, size - 1] --> [insert_index + 1, size]
   for (int i = GetSize(); i > insert_index; i--) {
@@ -160,7 +163,8 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::CopyNFrom(MappingType *items, int size) {
 INDEX_TEMPLATE_ARGUMENTS
 bool B_PLUS_TREE_LEAF_PAGE_TYPE::Lookup(const KeyType &key, ValueType *value, const KeyComparator &comparator) const {
   int target_index = KeyIndex(key, comparator);                                  // 查找第一个>=key的的下标
-  if (target_index >= GetSize() || comparator(KeyAt(target_index), key) != 0) {  // =key的下标不存在（只有>key的下标）
+  LOG_INFO(" look up : index : %d", target_index);
+  if (target_index > GetSize() || comparator(KeyAt(target_index), key) != 0) {  // =key的下标不存在（只有>key的下标）
     return false;
   }
   *value = array[target_index].second;  // value是传出参数
